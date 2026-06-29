@@ -334,6 +334,7 @@
   }
   .char-btn.sora .char-sub { background: var(--grape); }
   .char-btn.uta .char-sub { background: var(--coral); }
+  .char-btn.ren .char-sub { background: var(--leaf); }
 
   .home-btn {
     position: absolute;
@@ -390,6 +391,11 @@
         <span class="emoji-face">🌸</span>
         <span class="char-label">うた ちゃん</span>
         <span class="char-sub">ひらがな</span>
+      </button>
+      <button class="char-btn ren" id="btnRen">
+        <span class="emoji-face">🐉</span>
+        <span class="char-label">れん くん</span>
+        <span class="char-sub">かんじ</span>
       </button>
     </div>
   </div>
@@ -448,7 +454,34 @@ const WORDS = [
   { word: "ぱんだ", emoji: "🐼", answer: "ぱ" }
 ];
 
-const NUMBER_EMOJIS = ["🍎", "🐠", "🐰", "⭐", "🎈", "🍓", "🐝", "🌼", "🍪"];
+const KANJI_WORDS = [
+  { word: "うみ",     emoji: "🌊", answer: "海" },
+  { word: "みなと",   emoji: "⚓", answer: "港" },
+  { word: "しま",     emoji: "🏝️", answer: "島" },
+  { word: "ひつじ",   emoji: "🐑", answer: "羊" },
+  { word: "まめ",     emoji: "🫘", answer: "豆" },
+  { word: "ちゃ",     emoji: "🍵", answer: "茶" },
+  { word: "こおり",   emoji: "🧊", answer: "氷" },
+  { word: "ふえ",     emoji: "🎶", answer: "笛" },
+  { word: "かがみ",   emoji: "🪞", answer: "鏡" },
+  { word: "にわ",     emoji: "🏡", answer: "庭" },
+  { word: "はた",     emoji: "🏳️", answer: "旗" },
+  { word: "はな",     emoji: "👃", answer: "鼻" },
+  { word: "さら",     emoji: "🍽️", answer: "皿" },
+  { word: "てつ",     emoji: "🔩", answer: "鉄" },
+  { word: "およぐ",   emoji: "🏊", answer: "泳" },
+  { word: "ひらく",   emoji: "🚪", answer: "開" },
+  { word: "たいこ",   emoji: "🥁", answer: "鼓" },
+  { word: "わらう",   emoji: "😂", answer: "笑" },
+  { word: "さむい",   emoji: "🥶", answer: "寒" },
+  { word: "あつい",   emoji: "🥵", answer: "暑" },
+  { word: "おもい",   emoji: "🏋️", answer: "重" },
+  { word: "かるい",   emoji: "🪶", answer: "軽" },
+  { word: "はやい",   emoji: "🚀", answer: "速" },
+  { word: "みじかい", emoji: "📏", answer: "短" },
+  { word: "なく",     emoji: "😢", answer: "泣" }
+];
+const ALL_KANJI = "海港島羊豆茶氷笛鏡庭旗鼻皿鉄泳開鼓笑寒暑重軽速短泣命動使所者局医院農業横反流起階配約束辺械".split("");
 const ALL_HIRAGANA = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ".split("");
 const NUMBER_KANJI_WORDS = ["いち","に","さん","し","ご","ろく","しち","はち","きゅう"];
 
@@ -459,13 +492,15 @@ let currentItem = null;
 let locked = false;
 let usedWords = [];
 let usedNumbers = [];
-let mode = 'hiragana';   // 'hiragana' or 'number'
+let usedKanji = [];
+let mode = 'hiragana';   // 'hiragana' | 'number' | 'kanji'
 let playerName = 'うた ちゃん';
 
 const startScreen = document.getElementById('startScreen');
 const homeBtn = document.getElementById('homeBtn');
 const btnSora = document.getElementById('btnSora');
 const btnUta = document.getElementById('btnUta');
+const btnRen = document.getElementById('btnRen');
 const gameTitle = document.getElementById('gameTitle');
 const promptText = document.getElementById('promptText');
 const playerNameBanner = document.getElementById('playerNameBanner');
@@ -514,6 +549,15 @@ function startGame(selectedMode) {
     pictureCard.style.display = 'none';
     numberGrid.style.display = 'grid';
     replayHint.querySelector('span').textContent = 'えを　タップして　もういちど';
+  } else if (mode === 'kanji') {
+    playerName = 'れん くん';
+    playerNameBanner.textContent = '🌟 れん くん 🌟';
+    gameTitle.textContent = 'かんじ えあわせ';
+    promptText.textContent = 'これは　なに？　きいて　えらんでね';
+    document.title = 'かんじ えあわせ';
+    pictureCard.style.display = 'flex';
+    numberGrid.style.display = 'none';
+    replayHint.querySelector('span').textContent = 'えを　タップして　もういちど';
   } else {
     playerName = 'うた ちゃん';
     playerNameBanner.textContent = '🌟 うた ちゃん 🌟';
@@ -522,6 +566,7 @@ function startGame(selectedMode) {
     document.title = 'ひらがな えあわせ';
     pictureCard.style.display = 'flex';
     numberGrid.style.display = 'none';
+    replayHint.querySelector('span').textContent = 'えを　タップして　もういちど';
   }
   startScreen.classList.add('hidden');
   startScreen.style.display = 'none';
@@ -529,6 +574,7 @@ function startGame(selectedMode) {
   correctCount = 0;
   usedWords = [];
   usedNumbers = [];
+  usedKanji = [];
   endcard.classList.remove('show');
   initStars();
   renderRound();
@@ -542,6 +588,7 @@ function goHome() {
 
 btnSora.addEventListener('click', () => startGame('number'));
 btnUta.addEventListener('click', () => startGame('hiragana'));
+btnRen.addEventListener('click', () => startGame('kanji'));
 homeBtn.addEventListener('click', goHome);
 
 function pickWordItem() {
@@ -567,12 +614,28 @@ function pickNumberItem() {
   return { count: n, emoji: emoji, answer: String(n), word: NUMBER_KANJI_WORDS[n - 1] };
 }
 
-function buildChoicesFor(answerStr, isNumber) {
+function pickKanjiItem() {
+  let pool = KANJI_WORDS.filter(w => !usedKanji.includes(w.answer));
+  if (pool.length === 0) {
+    usedKanji = [];
+    pool = KANJI_WORDS;
+  }
+  const item = pool[Math.floor(Math.random() * pool.length)];
+  usedKanji.push(item.answer);
+  return item;
+}
+
+function buildChoicesFor(answerStr, type) {
   const distractors = new Set();
-  if (isNumber) {
+  if (type === 'number') {
     while (distractors.size < 2) {
       const n = 1 + Math.floor(Math.random() * 9);
       if (String(n) !== answerStr) distractors.add(String(n));
+    }
+  } else if (type === 'kanji') {
+    while (distractors.size < 2) {
+      const c = ALL_KANJI[Math.floor(Math.random() * ALL_KANJI.length)];
+      if (c !== answerStr) distractors.add(c);
     }
   } else {
     while (distractors.size < 2) {
@@ -607,12 +670,17 @@ function renderRound() {
       s.textContent = currentItem.emoji;
       numberGrid.appendChild(s);
     }
-    choices = buildChoicesFor(currentItem.answer, true);
+    choices = buildChoicesFor(currentItem.answer, 'number');
+    speakWord = currentItem.word;
+  } else if (mode === 'kanji') {
+    currentItem = pickKanjiItem();
+    pictureCard.textContent = currentItem.emoji;
+    choices = buildChoicesFor(currentItem.answer, 'kanji');
     speakWord = currentItem.word;
   } else {
     currentItem = pickWordItem();
     pictureCard.textContent = currentItem.emoji;
-    choices = buildChoicesFor(currentItem.answer, false);
+    choices = buildChoicesFor(currentItem.answer, 'hiragana');
     speakWord = currentItem.word;
   }
 
@@ -692,13 +760,14 @@ retryBtn.addEventListener('click', () => {
   correctCount = 0;
   usedWords = [];
   usedNumbers = [];
+  usedKanji = [];
   endcard.classList.remove('show');
   initStars();
   renderRound();
 });
 
 pictureCard.addEventListener('click', () => {
-  if (currentItem && mode === 'hiragana') speak(currentItem.word);
+  if (currentItem && (mode === 'hiragana' || mode === 'kanji')) speak(currentItem.word);
 });
 numberGrid.addEventListener('click', () => {
   if (currentItem && mode === 'number') speak(currentItem.word);
