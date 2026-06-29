@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ひらがな えあわせ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky: #FFF4D6;
+    --sun: #FFB703;
+    --coral: #FF6B6B;
+    --leaf: #4CB963;
+    --grape: #7B61FF;
+    --ink: #4A3B2A;
+    --card: #FFFFFF;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    background: linear-gradient(180deg, #FFE9A8 0%, var(--sky) 45%, #FFF8E7 100%);
+    color: var(--ink);
+    touch-action: manipulation;
+    user-select: none;
+  }
+
+  .sun {
+    position: absolute;
+    top: -60px;
+    right: -40px;
+    width: 180px;
+    height: 180px;
+    background: var(--sun);
+    border-radius: 50%;
+    box-shadow: 0 0 0 18px rgba(255,183,3,0.25);
+  }
+
+  .cloud {
+    position: absolute;
+    background: #fff;
+    border-radius: 50px;
+    opacity: 0.9;
+  }
+  .cloud::before, .cloud::after {
+    content: '';
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+  }
+  .c1 { width: 90px; height: 32px; top: 8%; left: 6%; }
+  .c1::before { width: 50px; height: 50px; top: -22px; left: 8px; }
+  .c1::after { width: 36px; height: 36px; top: -14px; left: 50px; }
+  .c2 { width: 70px; height: 26px; top: 18%; left: 78%; }
+  .c2::before { width: 38px; height: 38px; top: -16px; left: 6px; }
+  .c2::after { width: 28px; height: 28px; top: -10px; left: 38px; }
+
+  .wrap {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 18px 16px 24px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .topbar {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .title {
+    font-size: clamp(20px, 4vw, 28px);
+    font-weight: 800;
+    color: var(--coral);
+    text-shadow: 2px 2px 0 #fff;
+    letter-spacing: 1px;
+  }
+
+  .name-banner {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 4px 0 10px;
+  }
+  .player-name {
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(135deg, var(--grape), #9b8bff);
+    padding: 6px 22px;
+    border-radius: 50px;
+    box-shadow: 0 5px 0 #5a45c9, 0 8px 14px rgba(0,0,0,0.15);
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .name-banner .player-name {
+    font-size: clamp(24px, 6vw, 36px);
+    transform: rotate(-2deg);
+  }
+
+  .stars {
+    display: flex;
+    gap: 4px;
+    font-size: clamp(20px, 4vw, 26px);
+  }
+  .star { opacity: 0.25; transition: opacity 0.3s, transform 0.3s; }
+  .star.on { opacity: 1; transform: scale(1.15) rotate(-8deg); }
+
+  .stage {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(8px, 2.5vh, 22px);
+  }
+
+  .prompt {
+    font-size: clamp(16px, 3vw, 20px);
+    color: var(--ink);
+    opacity: 0.75;
+    font-weight: 700;
+  }
+
+  .picture-card {
+    background: var(--card);
+    border-radius: 36px;
+    width: clamp(160px, 38vw, 230px);
+    height: clamp(160px, 38vw, 230px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(80px, 18vw, 120px);
+    box-shadow: 0 10px 0 rgba(0,0,0,0.08), 0 14px 24px rgba(0,0,0,0.12);
+    border: 6px solid #fff;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .picture-card:active { transform: scale(0.95); }
+  .picture-card.bounce { animation: bounce 0.6s ease; }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-14px) rotate(-3deg); }
+    60% { transform: translateY(0) rotate(2deg); }
+  }
+
+  .replay-hint {
+    font-size: clamp(12px, 2.4vw, 15px);
+    color: var(--grape);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .replay-hint svg { width: 18px; height: 18px; fill: var(--grape); }
+
+  .choices {
+    display: flex;
+    gap: clamp(12px, 4vw, 26px);
+    margin-top: 4px;
+  }
+
+  .choice {
+    width: clamp(72px, 18vw, 110px);
+    height: clamp(72px, 18vw, 110px);
+    border-radius: 26px;
+    border: none;
+    font-size: clamp(34px, 8vw, 52px);
+    font-weight: 800;
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    color: var(--ink);
+    background: #fff;
+    box-shadow: 0 6px 0 #E7DCC2, 0 8px 16px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.12s, box-shadow 0.12s;
+  }
+  .choice:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #E7DCC2, 0 4px 8px rgba(0,0,0,0.1);
+  }
+  .choice.correct-flash {
+    background: var(--leaf);
+    color: #fff;
+    box-shadow: 0 6px 0 #2f8a44, 0 8px 16px rgba(0,0,0,0.1);
+  }
+  .choice.wrong-flash {
+    background: var(--coral);
+    color: #fff;
+    animation: shake 0.4s;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+  .choice:disabled { cursor: default; }
+
+  .feedback {
+    height: 32px;
+    font-size: clamp(16px, 3.2vw, 20px);
+    font-weight: 800;
+    color: var(--leaf);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .feedback.show { opacity: 1; }
+  .feedback.wrong { color: var(--coral); }
+
+  .grass {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 26px;
+    background: var(--leaf);
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    opacity: 0.85;
+  }
+
+  .confetti-piece {
+    position: fixed;
+    top: -10px;
+    border-radius: 2px;
+    pointer-events: none;
+    animation: fall linear forwards;
+    z-index: 50;
+  }
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(540deg); opacity: 0.3; }
+  }
+
+  .endcard {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,244,214,0.97);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    text-align: center;
+    padding: 24px;
+  }
+  .endcard.show { display: flex; }
+  .endcard h2 {
+    font-size: clamp(28px, 6vw, 40px);
+    color: var(--coral);
+    margin: 0;
+  }
+  .endcard .bigstars { font-size: clamp(36px, 8vw, 56px); }
+  .retry-btn {
+    border: none;
+    background: var(--grape);
+    color: #fff;
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+    font-weight: 800;
+    font-size: clamp(16px, 3.5vw, 20px);
+    padding: 14px 32px;
+    border-radius: 50px;
+    box-shadow: 0 6px 0 #5a45c9;
+    cursor: pointer;
+  }
+  .retry-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #5a45c9; }
+</style>
+</head>
+<body>
+
+<div class="sun"></div>
+<div class="cloud c1"></div>
+<div class="cloud c2"></div>
+
+<div class="wrap">
+  <div class="topbar">
+    <div class="title">ひらがな えあわせ</div>
+    <div class="stars" id="stars"></div>
+  </div>
+
+  <div class="name-banner">
+    <div class="player-name">🌟 そら くん 🌟</div>
+  </div>
+
+  <div class="stage">
+    <div class="prompt">これは　なに？　きいて　えらんでね</div>
+    <div class="picture-card" id="pictureCard">🍎</div>
+    <div class="replay-hint" id="replayHint">
+      <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1-3.29-2.5-4.03v8.05c1.5-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+      <span>えを　タップして　もういちど</span>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <div class="grass"></div>
+
+  <div class="endcard" id="endcard">
+    <h2>そらくん　よく　できました！</h2>
+    <div class="bigstars" id="bigstars"></div>
+    <button class="retry-btn" id="retryBtn">もう いちど あそぶ</button>
+  </div>
+</div>
+
+<script>
+const WORDS = [
+  { word: "りんご", emoji: "🍎", answer: "り" },
+  { word: "いぬ",   emoji: "🐶", answer: "い" },
+  { word: "ねこ",   emoji: "🐱", answer: "ね" },
+  { word: "さかな", emoji: "🐟", answer: "さ" },
+  { word: "つき",   emoji: "🌙", answer: "つ" },
+  { word: "ほし",   emoji: "⭐", answer: "ほ" },
+  { word: "くま",   emoji: "🐻", answer: "く" },
+  { word: "とり",   emoji: "🐦", answer: "と" },
+  { word: "はな",   emoji: "🌸", answer: "は" },
+  { word: "めがね", emoji: "👓", answer: "め" },
+  { word: "ゆき",   emoji: "❄️", answer: "ゆ" },
+  { word: "らいおん", emoji: "🦁", answer: "ら" },
+  { word: "わに",   emoji: "🐊", answer: "わ" },
+  { word: "きりん", emoji: "🦒", answer: "き" },
+  { word: "ぞう",   emoji: "🐘", answer: "ぞ" },
+  { word: "うさぎ", emoji: "🐰", answer: "う" },
+  { word: "たこ",   emoji: "🐙", answer: "た" },
+  { word: "へび",   emoji: "🐍", answer: "へ" },
+  { word: "もも",   emoji: "🍑", answer: "も" },
+  { word: "ぱんだ", emoji: "🐼", answer: "ぱ" }
+];
+
+const ALL_HIRAGANA = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ".split("");
+
+const ROUND_TOTAL = 8;
+let roundIndex = 0;
+let correctCount = 0;
+let currentItem = null;
+let locked = false;
+let usedWords = [];
+
+const pictureCard = document.getElementById('pictureCard');
+const choicesEl = document.getElementById('choices');
+const feedbackEl = document.getElementById('feedback');
+const starsEl = document.getElementById('stars');
+const endcard = document.getElementById('endcard');
+const bigstars = document.getElementById('bigstars');
+const retryBtn = document.getElementById('retryBtn');
+
+function initStars() {
+  starsEl.innerHTML = '';
+  for (let i = 0; i < ROUND_TOTAL; i++) {
+    const s = document.createElement('span');
+    s.className = 'star';
+    s.textContent = '⭐';
+    s.id = 'star-' + i;
+    starsEl.appendChild(s);
+  }
+}
+
+function speak(text, opts) {
+  opts = opts || {};
+  try {
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'ja-JP';
+    utter.rate = opts.rate || 0.62;
+    utter.pitch = opts.pitch || 1.35;
+    window.speechSynthesis.speak(utter);
+  } catch (e) { /* no speech support, silently skip */ }
+}
+
+function pickItem() {
+  let pool = WORDS.filter(w => !usedWords.includes(w.word));
+  if (pool.length === 0) {
+    usedWords = [];
+    pool = WORDS;
+  }
+  const item = pool[Math.floor(Math.random() * pool.length)];
+  usedWords.push(item.word);
+  return item;
+}
+
+function buildChoices(item) {
+  const distractors = new Set();
+  while (distractors.size < 2) {
+    const c = ALL_HIRAGANA[Math.floor(Math.random() * ALL_HIRAGANA.length)];
+    if (c !== item.answer) distractors.add(c);
+  }
+  const choices = [item.answer, ...distractors];
+  for (let i = choices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [choices[i], choices[j]] = [choices[j], choices[i]];
+  }
+  return choices;
+}
+
+function renderRound() {
+  if (roundIndex >= ROUND_TOTAL) {
+    showEnd();
+    return;
+  }
+  locked = false;
+  feedbackEl.className = 'feedback';
+  feedbackEl.textContent = '';
+  currentItem = pickItem();
+  pictureCard.textContent = currentItem.emoji;
+
+  const choices = buildChoices(currentItem);
+  choicesEl.innerHTML = '';
+  choices.forEach(ch => {
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    btn.textContent = ch;
+    btn.addEventListener('click', () => handleChoice(ch, btn));
+    choicesEl.appendChild(btn);
+  });
+
+  setTimeout(() => speak(currentItem.word), 350);
+}
+
+function handleChoice(ch, btn) {
+  if (locked) return;
+  locked = true;
+  const isCorrect = ch === currentItem.answer;
+
+  [...choicesEl.children].forEach(b => b.disabled = true);
+
+  if (isCorrect) {
+    btn.classList.add('correct-flash');
+    feedbackEl.textContent = 'そらくん　おめでとう！';
+    feedbackEl.className = 'feedback show';
+    pictureCard.classList.add('bounce');
+    speak('せいかい！　そらくん　おめでとう！', { rate: 0.7, pitch: 1.6 });
+    burstConfetti();
+    document.getElementById('star-' + roundIndex).classList.add('on');
+    correctCount++;
+  } else {
+    btn.classList.add('wrong-flash');
+    feedbackEl.textContent = 'もういちど　きいてみよう';
+    feedbackEl.className = 'feedback show wrong';
+    speak('ううん、もう一回きいてみよう', { rate: 0.6, pitch: 1.1 });
+    [...choicesEl.children].forEach(b => {
+      if (b.textContent === currentItem.answer) {
+        setTimeout(() => b.classList.add('correct-flash'), 500);
+      }
+    });
+  }
+
+  setTimeout(() => {
+    pictureCard.classList.remove('bounce');
+    roundIndex++;
+    renderRound();
+  }, isCorrect ? 1400 : 2000);
+}
+
+function burstConfetti() {
+  const colors = ['#FF6B6B', '#FFB703', '#4CB963', '#7B61FF', '#FF9F1C'];
+  for (let i = 0; i < 24; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    const size = 6 + Math.random() * 6;
+    piece.style.width = size + 'px';
+    piece.style.height = size + 'px';
+    piece.style.left = (Math.random() * 100) + 'vw';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDuration = (1.6 + Math.random() * 1.2) + 's';
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 3000);
+  }
+}
+
+function showEnd() {
+  endcard.classList.add('show');
+  bigstars.textContent = '⭐'.repeat(correctCount) + '　' + correctCount + ' / ' + ROUND_TOTAL;
+  speak('そらくん　よくできました！', { rate: 0.65, pitch: 1.5 });
+}
+
+retryBtn.addEventListener('click', () => {
+  roundIndex = 0;
+  correctCount = 0;
+  usedWords = [];
+  endcard.classList.remove('show');
+  initStars();
+  renderRound();
+});
+
+pictureCard.addEventListener('click', () => {
+  if (currentItem) speak(currentItem.word);
+});
+
+initStars();
+renderRound();
+</script>
+
+</body>
+</html>
