@@ -495,6 +495,12 @@ let usedNumbers = [];
 let usedKanji = [];
 let mode = 'hiragana';   // 'hiragana' | 'number' | 'kanji'
 let playerName = 'うた ちゃん';
+let pendingTimeouts = [];
+
+function clearPendingTimeouts() {
+  pendingTimeouts.forEach(id => clearTimeout(id));
+  pendingTimeouts = [];
+}
 
 const startScreen = document.getElementById('startScreen');
 const homeBtn = document.getElementById('homeBtn');
@@ -539,6 +545,8 @@ function speak(text, opts) {
 }
 
 function startGame(selectedMode) {
+  clearPendingTimeouts();
+  window.speechSynthesis.cancel();
   mode = selectedMode;
   if (mode === 'number') {
     playerName = 'そら くん';
@@ -581,7 +589,9 @@ function startGame(selectedMode) {
 }
 
 function goHome() {
+  clearPendingTimeouts();
   window.speechSynthesis.cancel();
+  locked = true;
   startScreen.style.display = 'flex';
   endcard.classList.remove('show');
 }
@@ -693,7 +703,8 @@ function renderRound() {
     choicesEl.appendChild(btn);
   });
 
-  setTimeout(() => speak(speakWord), 350);
+  const t = setTimeout(() => speak(speakWord), 350);
+  pendingTimeouts.push(t);
 }
 
 function handleChoice(ch, btn) {
@@ -725,11 +736,12 @@ function handleChoice(ch, btn) {
     });
   }
 
-  setTimeout(() => {
+  const t = setTimeout(() => {
     visual.classList.remove('bounce');
     roundIndex++;
     renderRound();
   }, isCorrect ? 1400 : 2000);
+  pendingTimeouts.push(t);
 }
 
 function burstConfetti() {
