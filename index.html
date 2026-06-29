@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ひらがな えあわせ</title>
+<title>えあわせ ゲーム</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
@@ -276,6 +276,97 @@
     cursor: pointer;
   }
   .retry-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #5a45c9; }
+
+  /* --- スタート画面 --- */
+  .start-screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(20px, 5vh, 40px);
+    z-index: 40;
+    background: linear-gradient(180deg, #FFE9A8 0%, var(--sky) 45%, #FFF8E7 100%);
+  }
+  .start-title {
+    font-size: clamp(24px, 6vw, 34px);
+    font-weight: 800;
+    color: var(--coral);
+    text-shadow: 2px 2px 0 #fff;
+    text-align: center;
+  }
+  .char-row {
+    display: flex;
+    gap: clamp(20px, 6vw, 50px);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .char-btn {
+    border: none;
+    background: var(--card);
+    border-radius: 32px;
+    width: clamp(140px, 36vw, 200px);
+    padding: clamp(18px, 3vh, 28px) 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.08), 0 12px 20px rgba(0,0,0,0.12);
+    border: 6px solid #fff;
+    transition: transform 0.15s;
+    font-family: 'M PLUS Rounded 1c', sans-serif;
+  }
+  .char-btn:active { transform: scale(0.95); }
+  .char-btn .emoji-face { font-size: clamp(50px, 12vw, 72px); }
+  .char-btn .char-label {
+    font-size: clamp(18px, 4vw, 24px);
+    font-weight: 800;
+    color: var(--ink);
+  }
+  .char-btn .char-sub {
+    font-size: clamp(12px, 2.6vw, 15px);
+    font-weight: 700;
+    color: #fff;
+    padding: 3px 14px;
+    border-radius: 50px;
+  }
+  .char-btn.sora .char-sub { background: var(--grape); }
+  .char-btn.uta .char-sub { background: var(--coral); }
+
+  .home-btn {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    z-index: 30;
+    border: none;
+    background: #fff;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    box-shadow: 0 4px 0 #E7DCC2, 0 6px 10px rgba(0,0,0,0.1);
+    font-size: 18px;
+    cursor: pointer;
+  }
+  .home-btn:active { transform: translateY(2px); }
+
+  .number-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    width: clamp(160px, 38vw, 230px);
+    height: clamp(160px, 38vw, 230px);
+    background: var(--card);
+    border-radius: 36px;
+    border: 6px solid #fff;
+    box-shadow: 0 10px 0 rgba(0,0,0,0.08), 0 14px 24px rgba(0,0,0,0.12);
+    align-items: center;
+    justify-items: center;
+    padding: 14px;
+    cursor: pointer;
+  }
+  .number-grid span { font-size: clamp(22px, 6vw, 34px); }
 </style>
 </head>
 <body>
@@ -285,18 +376,37 @@
 <div class="cloud c2"></div>
 
 <div class="wrap">
+  <button class="home-btn" id="homeBtn" title="さいしょから">🏠</button>
+
+  <div class="start-screen" id="startScreen">
+    <div class="start-title">だれと　あそぶ？</div>
+    <div class="char-row">
+      <button class="char-btn sora" id="btnSora">
+        <span class="emoji-face">🚀</span>
+        <span class="char-label">そら くん</span>
+        <span class="char-sub">すうじ 1〜9</span>
+      </button>
+      <button class="char-btn uta" id="btnUta">
+        <span class="emoji-face">🌸</span>
+        <span class="char-label">うた ちゃん</span>
+        <span class="char-sub">ひらがな</span>
+      </button>
+    </div>
+  </div>
+
   <div class="topbar">
-    <div class="title">ひらがな えあわせ</div>
+    <div class="title" id="gameTitle">ひらがな えあわせ</div>
     <div class="stars" id="stars"></div>
   </div>
 
   <div class="name-banner">
-    <div class="player-name">🌟 そら くん 🌟</div>
+    <div class="player-name" id="playerNameBanner">🌟 うた ちゃん 🌟</div>
   </div>
 
   <div class="stage">
-    <div class="prompt">これは　なに？　きいて　えらんでね</div>
+    <div class="prompt" id="promptText">これは　なに？　きいて　えらんでね</div>
     <div class="picture-card" id="pictureCard">🍎</div>
+    <div class="number-grid" id="numberGrid" style="display:none;"></div>
     <div class="replay-hint" id="replayHint">
       <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1-3.29-2.5-4.03v8.05c1.5-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
       <span>えを　タップして　もういちど</span>
@@ -308,7 +418,7 @@
   <div class="grass"></div>
 
   <div class="endcard" id="endcard">
-    <h2>そらくん　よく　できました！</h2>
+    <h2 id="endTitle">うたちゃん　よく　できました！</h2>
     <div class="bigstars" id="bigstars"></div>
     <button class="retry-btn" id="retryBtn">もう いちど あそぶ</button>
   </div>
@@ -338,7 +448,9 @@ const WORDS = [
   { word: "ぱんだ", emoji: "🐼", answer: "ぱ" }
 ];
 
+const NUMBER_EMOJIS = ["🍎", "🐠", "🐰", "⭐", "🎈", "🍓", "🐝", "🌼", "🍪"];
 const ALL_HIRAGANA = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ".split("");
+const NUMBER_KANJI_WORDS = ["いち","に","さん","し","ご","ろく","しち","はち","きゅう"];
 
 const ROUND_TOTAL = 8;
 let roundIndex = 0;
@@ -346,12 +458,25 @@ let correctCount = 0;
 let currentItem = null;
 let locked = false;
 let usedWords = [];
+let usedNumbers = [];
+let mode = 'hiragana';   // 'hiragana' or 'number'
+let playerName = 'うた ちゃん';
 
+const startScreen = document.getElementById('startScreen');
+const homeBtn = document.getElementById('homeBtn');
+const btnSora = document.getElementById('btnSora');
+const btnUta = document.getElementById('btnUta');
+const gameTitle = document.getElementById('gameTitle');
+const promptText = document.getElementById('promptText');
+const playerNameBanner = document.getElementById('playerNameBanner');
+const replayHint = document.getElementById('replayHint');
 const pictureCard = document.getElementById('pictureCard');
+const numberGrid = document.getElementById('numberGrid');
 const choicesEl = document.getElementById('choices');
 const feedbackEl = document.getElementById('feedback');
 const starsEl = document.getElementById('stars');
 const endcard = document.getElementById('endcard');
+const endTitle = document.getElementById('endTitle');
 const bigstars = document.getElementById('bigstars');
 const retryBtn = document.getElementById('retryBtn');
 
@@ -378,7 +503,48 @@ function speak(text, opts) {
   } catch (e) { /* no speech support, silently skip */ }
 }
 
-function pickItem() {
+function startGame(selectedMode) {
+  mode = selectedMode;
+  if (mode === 'number') {
+    playerName = 'そら くん';
+    playerNameBanner.textContent = '🌟 そら くん 🌟';
+    gameTitle.textContent = 'すうじ えあわせ';
+    promptText.textContent = 'いくつ あるかな？　えらんでね';
+    document.title = 'すうじ えあわせ';
+    pictureCard.style.display = 'none';
+    numberGrid.style.display = 'grid';
+    replayHint.querySelector('span').textContent = 'えを　タップして　もういちど';
+  } else {
+    playerName = 'うた ちゃん';
+    playerNameBanner.textContent = '🌟 うた ちゃん 🌟';
+    gameTitle.textContent = 'ひらがな えあわせ';
+    promptText.textContent = 'これは　なに？　きいて　えらんでね';
+    document.title = 'ひらがな えあわせ';
+    pictureCard.style.display = 'flex';
+    numberGrid.style.display = 'none';
+  }
+  startScreen.classList.add('hidden');
+  startScreen.style.display = 'none';
+  roundIndex = 0;
+  correctCount = 0;
+  usedWords = [];
+  usedNumbers = [];
+  endcard.classList.remove('show');
+  initStars();
+  renderRound();
+}
+
+function goHome() {
+  window.speechSynthesis.cancel();
+  startScreen.style.display = 'flex';
+  endcard.classList.remove('show');
+}
+
+btnSora.addEventListener('click', () => startGame('number'));
+btnUta.addEventListener('click', () => startGame('hiragana'));
+homeBtn.addEventListener('click', goHome);
+
+function pickWordItem() {
   let pool = WORDS.filter(w => !usedWords.includes(w.word));
   if (pool.length === 0) {
     usedWords = [];
@@ -389,13 +555,32 @@ function pickItem() {
   return item;
 }
 
-function buildChoices(item) {
-  const distractors = new Set();
-  while (distractors.size < 2) {
-    const c = ALL_HIRAGANA[Math.floor(Math.random() * ALL_HIRAGANA.length)];
-    if (c !== item.answer) distractors.add(c);
+function pickNumberItem() {
+  let pool = [1,2,3,4,5,6,7,8,9].filter(n => !usedNumbers.includes(n));
+  if (pool.length === 0) {
+    usedNumbers = [];
+    pool = [1,2,3,4,5,6,7,8,9];
   }
-  const choices = [item.answer, ...distractors];
+  const n = pool[Math.floor(Math.random() * pool.length)];
+  usedNumbers.push(n);
+  const emoji = NUMBER_EMOJIS[Math.floor(Math.random() * NUMBER_EMOJIS.length)];
+  return { count: n, emoji: emoji, answer: String(n), word: NUMBER_KANJI_WORDS[n - 1] };
+}
+
+function buildChoicesFor(answerStr, isNumber) {
+  const distractors = new Set();
+  if (isNumber) {
+    while (distractors.size < 2) {
+      const n = 1 + Math.floor(Math.random() * 9);
+      if (String(n) !== answerStr) distractors.add(String(n));
+    }
+  } else {
+    while (distractors.size < 2) {
+      const c = ALL_HIRAGANA[Math.floor(Math.random() * ALL_HIRAGANA.length)];
+      if (c !== answerStr) distractors.add(c);
+    }
+  }
+  const choices = [answerStr, ...distractors];
   for (let i = choices.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [choices[i], choices[j]] = [choices[j], choices[i]];
@@ -411,10 +596,26 @@ function renderRound() {
   locked = false;
   feedbackEl.className = 'feedback';
   feedbackEl.textContent = '';
-  currentItem = pickItem();
-  pictureCard.textContent = currentItem.emoji;
 
-  const choices = buildChoices(currentItem);
+  let choices, speakWord;
+
+  if (mode === 'number') {
+    currentItem = pickNumberItem();
+    numberGrid.innerHTML = '';
+    for (let i = 0; i < currentItem.count; i++) {
+      const s = document.createElement('span');
+      s.textContent = currentItem.emoji;
+      numberGrid.appendChild(s);
+    }
+    choices = buildChoicesFor(currentItem.answer, true);
+    speakWord = currentItem.word;
+  } else {
+    currentItem = pickWordItem();
+    pictureCard.textContent = currentItem.emoji;
+    choices = buildChoicesFor(currentItem.answer, false);
+    speakWord = currentItem.word;
+  }
+
   choicesEl.innerHTML = '';
   choices.forEach(ch => {
     const btn = document.createElement('button');
@@ -424,7 +625,7 @@ function renderRound() {
     choicesEl.appendChild(btn);
   });
 
-  setTimeout(() => speak(currentItem.word), 350);
+  setTimeout(() => speak(speakWord), 350);
 }
 
 function handleChoice(ch, btn) {
@@ -433,13 +634,14 @@ function handleChoice(ch, btn) {
   const isCorrect = ch === currentItem.answer;
 
   [...choicesEl.children].forEach(b => b.disabled = true);
+  const visual = mode === 'number' ? numberGrid : pictureCard;
 
   if (isCorrect) {
     btn.classList.add('correct-flash');
-    feedbackEl.textContent = 'そらくん　おめでとう！';
+    feedbackEl.textContent = playerName + '　おめでとう！';
     feedbackEl.className = 'feedback show';
-    pictureCard.classList.add('bounce');
-    speak('せいかい！　そらくん　おめでとう！', { rate: 0.7, pitch: 1.6 });
+    visual.classList.add('bounce');
+    speak('せいかい！　' + playerName.replace(' ', '') + '　おめでとう！', { rate: 0.7, pitch: 1.6 });
     burstConfetti();
     document.getElementById('star-' + roundIndex).classList.add('on');
     correctCount++;
@@ -456,7 +658,7 @@ function handleChoice(ch, btn) {
   }
 
   setTimeout(() => {
-    pictureCard.classList.remove('bounce');
+    visual.classList.remove('bounce');
     roundIndex++;
     renderRound();
   }, isCorrect ? 1400 : 2000);
@@ -480,25 +682,27 @@ function burstConfetti() {
 
 function showEnd() {
   endcard.classList.add('show');
+  endTitle.textContent = playerName.replace(' ', '') + '　よく　できました！';
   bigstars.textContent = '⭐'.repeat(correctCount) + '　' + correctCount + ' / ' + ROUND_TOTAL;
-  speak('そらくん　よくできました！', { rate: 0.65, pitch: 1.5 });
+  speak(playerName.replace(' ', '') + '　よくできました！', { rate: 0.65, pitch: 1.5 });
 }
 
 retryBtn.addEventListener('click', () => {
   roundIndex = 0;
   correctCount = 0;
   usedWords = [];
+  usedNumbers = [];
   endcard.classList.remove('show');
   initStars();
   renderRound();
 });
 
 pictureCard.addEventListener('click', () => {
-  if (currentItem) speak(currentItem.word);
+  if (currentItem && mode === 'hiragana') speak(currentItem.word);
 });
-
-initStars();
-renderRound();
+numberGrid.addEventListener('click', () => {
+  if (currentItem && mode === 'number') speak(currentItem.word);
+});
 </script>
 
 </body>
