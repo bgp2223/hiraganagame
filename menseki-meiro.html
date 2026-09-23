@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>面積迷路メーカー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FFFFFF;
+    --desk: #EEF1F4;
+    --ink: #1F2A33;
+    --line: #26323C;
+    --muted: #6B7782;
+    --pen: #D9352A;
+    --accent: #1F6F8B;
+    --panel: #FFFFFF;
+    --border: #CBD3DA;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    background: var(--desk);
+    color: var(--ink);
+    font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Meiryo', sans-serif;
+    padding-inline: 16px;
+    padding-block: 16px 48px;
+  }
+
+  /* ---------- 操作パネル ---------- */
+  .panel {
+    max-width: 210mm;
+    margin: 0 auto 20px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    display: grid;
+    gap: 14px;
+  }
+  .panel h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+  }
+  .panel h1 span { color: var(--pen); }
+  .panel p.lead { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 18px;
+    align-items: flex-end;
+  }
+  .field { display: grid; gap: 4px; font-size: 12px; color: var(--muted); font-weight: 700; }
+  .field select, .field input {
+    font: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--paper);
+    min-width: 0;
+  }
+  .field input[type=text] { width: 14em; max-width: 100%; }
+  .field input[type=number] { width: 7em; }
+  .buttons { display: flex; flex-wrap: wrap; gap: 10px; }
+  button {
+    font: inherit;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    background: var(--paper);
+    color: var(--accent);
+    cursor: pointer;
+  }
+  button.primary { background: var(--accent); color: #fff; }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid #F2B84B; outline-offset: 1px; }
+  .levels { font-size: 12px; color: var(--muted); line-height: 1.7; margin: 0; padding-left: 1.2em; }
+
+  /* ---------- プリント（A4） ---------- */
+  .sheet {
+    width: 210mm;
+    max-width: 100%;
+    height: 297mm;
+    margin: 0 auto 20px;
+    background: var(--paper);
+    box-shadow: 0 1px 4px rgba(20, 30, 40, 0.18);
+    padding: 12mm 12mm 10mm;
+    display: flex;
+    flex-direction: column;
+  }
+  .sheet-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 12px;
+    border-bottom: 2px solid var(--line);
+    padding-bottom: 6px;
+    margin-bottom: 4mm;
+  }
+  .sheet-title { font-size: 20px; font-weight: 800; }
+  .sheet-title small { font-size: 13px; font-weight: 700; margin-left: 8px; color: var(--muted); }
+  .sheet-title .ans-tag { color: var(--pen); margin-left: 8px; }
+  .name-box { font-size: 13px; white-space: nowrap; }
+  .name-box span { display: inline-block; width: 42mm; border-bottom: 1px solid var(--line); margin-left: 4px; }
+  .sheet-note { font-size: 11px; color: var(--muted); margin: 0 0 3mm; }
+  .grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    gap: 4mm;
+  }
+  .prob {
+    border: 1px solid var(--border);
+    border-radius: 3mm;
+    padding: 3mm;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    position: relative;
+  }
+  .prob-no {
+    font-weight: 800;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .prob-no .no {
+    display: inline-grid;
+    place-items: center;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 2px solid var(--line);
+    font-size: 13px;
+  }
+  .prob-no .lv { font-size: 11px; color: var(--muted); font-weight: 700; }
+  .fig { flex: 1; position: relative; min-height: 0; }
+  .fig svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+  .answer-line { font-size: 14px; text-align: right; font-family: 'Klee One', serif; }
+  .answer-line .blank { display: inline-block; width: 22mm; border-bottom: 1px solid var(--line); }
+  .answer-line.filled { color: var(--pen); font-weight: 600; }
+  .steps { columns: 2; column-gap: 4mm; font-family: 'Klee One', serif; font-size: 12px; color: var(--pen); margin: 0; padding: 0; list-style: none; line-height: 1.45; }
+  .foot { font-size: 10px; color: var(--muted); text-align: right; margin-top: 3mm; }
+
+  svg text { font-family: 'Klee One', 'M PLUS Rounded 1c', serif; }
+
+  @media screen and (max-width: 820px) {
+    .sheet { height: auto; padding: 16px; }
+    .grid { grid-template-columns: 1fr; grid-template-rows: none; }
+    .fig { flex: none; height: 240px; }
+  }
+
+  @page { size: A4 portrait; margin: 0; }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .panel { display: none; }
+    .sheet {
+      width: 210mm; height: 297mm; max-width: none;
+      margin: 0; box-shadow: none;
+      break-after: page; page-break-after: always;
+    }
+    .sheet:last-child { break-after: auto; page-break-after: auto; }
+    .sheet.hidden-print { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<section class="panel" aria-label="設定">
+  <h1>面積迷路<span>メーカー</span></h1>
+  <p class="lead">
+    九九だけで解ける「面積迷路」を自動で作ります。すべての数字を使うと、ちょうど答えが1つに決まる問題だけを出します。
+    「印刷する」からPDFに保存すれば、まなブリッジにそのままアップロードできます。
+  </p>
+  <div class="controls">
+    <label class="field" for="level">レベル
+      <select id="level">
+        <option value="1">レベル1（長方形1つ）</option>
+        <option value="2">レベル2（長方形2つ）</option>
+        <option value="3">レベル3（長方形3つ）</option>
+        <option value="4">レベル4（長方形4つ）</option>
+        <option value="5">レベル5（長方形5つ）</option>
+        <option value="mix" selected>ミックス（やさしい→むずかしい）</option>
+      </select>
+    </label>
+    <label class="field" for="count">問題数
+      <select id="count">
+        <option value="6">6問（1枚）</option>
+        <option value="12" selected>12問（2枚）</option>
+        <option value="18">18問（3枚）</option>
+        <option value="24">24問（4枚）</option>
+        <option value="30">30問（5枚）</option>
+      </select>
+    </label>
+    <label class="field" for="symbol">わからない数
+      <select id="symbol">
+        <option value="x" selected>x</option>
+        <option value="□">□</option>
+        <option value="？">？</option>
+      </select>
+    </label>
+    <label class="field" for="unit">単位
+      <select id="unit">
+        <option value="cm" selected>cm・cm²をつける</option>
+        <option value="">つけない</option>
+      </select>
+    </label>
+    <label class="field" for="answers">答え
+      <select id="answers">
+        <option value="after" selected>問題のあとに答えページ</option>
+        <option value="none">問題だけ</option>
+        <option value="only">答えだけ</option>
+      </select>
+    </label>
+    <label class="field" for="title">タイトル
+      <input type="text" id="title" value="面積迷路にちょうせん！">
+    </label>
+    <label class="field" for="seed">問題番号（同じ番号＝同じ問題）
+      <input type="number" id="seed" min="1" max="999999">
+    </label>
+  </div>
+  <div class="buttons">
+    <button class="primary" id="btn-new" type="button">新しい問題を作る</button>
+    <button id="btn-same" type="button">この番号で作り直す</button>
+    <button id="btn-print" type="button">印刷する / PDFに保存</button>
+  </div>
+  <ul class="levels">
+    <li>ルール：長方形の面積＝たて×よこ。書いてある数字だけを使って、x を求めます。</li>
+    <li>辺の長さはすべて2〜9cm、面積はすべて九九の答えになります。図の長さは正確ではありません。</li>
+  </ul>
+</section>
+
+<main id="out"></main>
+
+<script>
+(() => {
+  'use strict';
+
+  // ---------- 乱数（番号から同じ問題を再現できるように） ----------
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  let rand = Math.random;
+  const ri = (lo, hi) => lo + Math.floor(rand() * (hi - lo + 1));
+  const pick = arr => arr[Math.floor(rand() * arr.length)];
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  const MIN_SIDE = 2, MAX_SIDE = 9;
+
+  // ---------- 形を作る ----------
+  // 形 = 列の幅 W[]、行の高さ H[]、長方形のリスト（列・行の範囲）
+  function makeShape(k) {
+    let nc, nr;
+    if (k === 1) { nc = 1; nr = 1; }
+    else if (k === 2) { [nc, nr] = pick([[1, 2], [2, 1], [2, 2], [2, 2]]); }
+    else if (k === 3) { [nc, nr] = pick([[1, 3], [3, 1], [2, 2], [2, 2], [2, 3], [3, 2], [3, 3]]); }
+    else { [nc, nr] = pick([[2, 2], [2, 3], [3, 2], [3, 3], [3, 3]]); }
+    if (nc * nr < k) return null;
+
+    // 1マス1長方形から始めて、ランダムに合体
+    let rects = [];
+    for (let r = 0; r < nr; r++) for (let c = 0; c < nc; c++) rects.push({ c0: c, c1: c, r0: r, r1: r });
+    const merges = ri(0, nc * nr);
+    for (let m = 0; m < merges; m++) {
+      const i = ri(0, rects.length - 1);
+      const a = rects[i];
+      const j = rects.findIndex((b, idx) => idx !== i && (
+        (b.r0 === a.r0 && b.r1 === a.r1 && (b.c0 === a.c1 + 1 || b.c1 === a.c0 - 1)) ||
+        (b.c0 === a.c0 && b.c1 === a.c1 && (b.r0 === a.r1 + 1 || b.r1 === a.r0 - 1))) && rand() < 0.7);
+      if (j < 0) continue;
+      const b = rects[j];
+      const u = { c0: Math.min(a.c0, b.c0), c1: Math.max(a.c1, b.c1), r0: Math.min(a.r0, b.r0), r1: Math.max(a.r1, b.r1) };
+      rects = rects.filter((_, idx) => idx !== i && idx !== j);
+      rects.push(u);
+    }
+    if (rects.length < k) return null;
+
+    // つながりを保ったまま長方形を減らす
+    let guard = 0;
+    while (rects.length > k && guard++ < 50) {
+      const i = ri(0, rects.length - 1);
+      const rest = rects.filter((_, idx) => idx !== i);
+      if (connected(rest)) rects = rest;
+    }
+    if (rects.length !== k) return null;
+
+    const shape = { nc, nr, rects, W: [], H: [] };
+    shape.owner = ownerGrid(shape);
+    if (!canonical(shape) || hasHole(shape)) return null;
+
+    // 長さを決める（どの長方形の辺も2〜9）
+    for (let t = 0; t < 40; t++) {
+      shape.W = Array.from({ length: nc }, () => ri(MIN_SIDE, MAX_SIDE - 1));
+      shape.H = Array.from({ length: nr }, () => ri(MIN_SIDE, MAX_SIDE - 1));
+      if (rand() < 0.35) shape.W[ri(0, nc - 1)] = MAX_SIDE;
+      if (rand() < 0.35) shape.H[ri(0, nr - 1)] = MAX_SIDE;
+      if (rects.every(R => rw(shape, R) <= MAX_SIDE && rh(shape, R) <= MAX_SIDE)) return shape;
+    }
+    return null;
+  }
+
+  const sum = (arr, a, b) => { let s = 0; for (let i = a; i <= b; i++) s += arr[i]; return s; };
+  const rw = (s, R) => sum(s.W, R.c0, R.c1);
+  const rh = (s, R) => sum(s.H, R.r0, R.r1);
+  const touches = (a, b) =>
+    ((a.c1 + 1 === b.c0 || b.c1 + 1 === a.c0) && a.r0 <= b.r1 && b.r0 <= a.r1) ||
+    ((a.r1 + 1 === b.r0 || b.r1 + 1 === a.r0) && a.c0 <= b.c1 && b.c0 <= a.c1);
+
+  function connected(rects) {
+    const seen = new Set([0]); const st = [0];
+    while (st.length) {
+      const i = st.pop();
+      rects.forEach((b, j) => { if (!seen.has(j) && touches(rects[i], b)) { seen.add(j); st.push(j); } });
+    }
+    return seen.size === rects.length;
+  }
+
+  function ownerGrid(s) {
+    const g = Array.from({ length: s.nr }, () => Array(s.nc).fill(-1));
+    s.rects.forEach((R, i) => { for (let r = R.r0; r <= R.r1; r++) for (let c = R.c0; c <= R.c1; c++) g[r][c] = i; });
+    return g;
+  }
+
+  // すべての列・行が使われ、すべての区切り線が意味を持つか
+  function canonical(s) {
+    for (let c = 0; c < s.nc; c++) if (!s.rects.some(R => R.c0 <= c && c <= R.c1)) return false;
+    for (let r = 0; r < s.nr; r++) if (!s.rects.some(R => R.r0 <= r && r <= R.r1)) return false;
+    for (let c = 0; c < s.nc - 1; c++) if (!s.rects.some(R => R.c1 === c || R.c0 === c + 1)) return false;
+    for (let r = 0; r < s.nr - 1; r++) if (!s.rects.some(R => R.r1 === r || R.r0 === r + 1)) return false;
+    return true;
+  }
+
+  function hasHole(s) {
+    const seen = Array.from({ length: s.nr }, () => Array(s.nc).fill(false));
+    const st = [];
+    for (let r = 0; r < s.nr; r++) for (let c = 0; c < s.nc; c++) {
+      if (s.owner[r][c] < 0 && (r === 0 || c === 0 || r === s.nr - 1 || c === s.nc - 1)) { seen[r][c] = true; st.push([r, c]); }
+    }
+    while (st.length) {
+      const [r, c] = st.pop();
+      for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const y = r + dr, x = c + dc;
+        if (y >= 0 && x >= 0 && y < s.nr && x < s.nc && !seen[y][x] && s.owner[y][x] < 0) { seen[y][x] = true; st.push([y, x]); }
+      }
+    }
+    for (let r = 0; r < s.nr; r++) for (let c = 0; c < s.nc; c++) if (s.owner[r][c] < 0 && !seen[r][c]) return true;
+    return false;
+  }
+
+  const inShape = (s, r, c) => r >= 0 && c >= 0 && r < s.nr && c < s.nc && s.owner[r][c] >= 0;
+
+  // 図の外側に面している辺（の一部）＝長さを書ける場所
+  function labelCandidates(s) {
+    const out = [];
+    s.rects.forEach((R, i) => {
+      const sides = [
+        { axis: 'c', lo: R.c0, hi: R.c1, side: 'top', ext: c => !inShape(s, R.r0 - 1, c) },
+        { axis: 'c', lo: R.c0, hi: R.c1, side: 'bottom', ext: c => !inShape(s, R.r1 + 1, c) },
+        { axis: 'r', lo: R.r0, hi: R.r1, side: 'left', ext: r => !inShape(s, r, R.c0 - 1) },
+        { axis: 'r', lo: R.r0, hi: R.r1, side: 'right', ext: r => !inShape(s, r, R.c1 + 1) },
+      ];
+      for (const sd of sides) {
+        let start = null;
+        for (let t = sd.lo; t <= sd.hi + 1; t++) {
+          const e = t <= sd.hi && sd.ext(t);
+          if (e && start === null) start = t;
+          if (!e && start !== null) {
+            out.push({ axis: sd.axis, a: start, b: t - 1, side: sd.side, rect: i });
+            start = null;
+          }
+        }
+      }
+    });
+    return out;
+  }
+
+  const spanKey = (axis, a, b) => axis + a + '-' + b;
+
+  // ---------- 解く（九九のわり算・かけ算・たし算・ひき算だけ） ----------
+  function solve(s, givenAreas, givenLabels, target) {
+    const facts = new Map();  // spanKey -> {v, step, deps}
+    const areas = new Map();  // rect idx -> {v, step, deps}
+    const val = { c: s.W, r: s.H };
+    for (const L of givenLabels) {
+      const k = spanKey(L.axis, L.a, L.b);
+      if (!facts.has(k)) facts.set(k, { v: sum(val[L.axis], L.a, L.b), step: null, deps: [] });
+    }
+    for (const i of givenAreas) areas.set(i, { v: rw(s, s.rects[i]) * rh(s, s.rects[i]), step: null, deps: [] });
+
+    const done = () => target.type === 'area' ? areas.has(target.rect) : facts.has(spanKey(target.axis, target.a, target.b));
+
+    for (let round = 0; round < 30 && !done(); round++) {
+      const nf = new Map(), na = new Map();
+      const addF = (k, obj) => { if (!facts.has(k) && !nf.has(k)) nf.set(k, obj); };
+      s.rects.forEach((R, i) => {
+        const wk = spanKey('c', R.c0, R.c1), hk = spanKey('r', R.r0, R.r1);
+        const w = facts.get(wk), h = facts.get(hk), A = areas.get(i);
+        if (A && w && !h) addF(hk, { v: A.v / w.v, step: `${A.v} ÷ ${w.v} = ${A.v / w.v}`, deps: ['A' + i, wk], kind: 'div' });
+        if (A && h && !w) addF(wk, { v: A.v / h.v, step: `${A.v} ÷ ${h.v} = ${A.v / h.v}`, deps: ['A' + i, hk], kind: 'div' });
+        if (!A && w && h && !na.has(i)) na.set(i, { v: w.v * h.v, step: `${h.v} × ${w.v} = ${w.v * h.v}`, deps: [wk, hk], kind: 'mul' });
+      });
+      const list = [...facts.entries()].map(([k, f]) => {
+        const m = k.match(/^([cr])(\d+)-(\d+)$/);
+        return { k, axis: m[1], a: +m[2], b: +m[3], v: f.v };
+      });
+      for (const p of list) for (const q of list) {
+        if (p === q || p.axis !== q.axis) continue;
+        if (q.a === p.b + 1) addF(spanKey(p.axis, p.a, q.b), { v: p.v + q.v, step: `${p.v} + ${q.v} = ${p.v + q.v}`, deps: [p.k, q.k], kind: 'add' });
+        if (p.a <= q.a && q.b <= p.b && !(p.a === q.a && p.b === q.b)) {
+          if (p.a === q.a) addF(spanKey(p.axis, q.b + 1, p.b), { v: p.v - q.v, step: `${p.v} − ${q.v} = ${p.v - q.v}`, deps: [p.k, q.k], kind: 'sub' });
+          else if (p.b === q.b) addF(spanKey(p.axis, p.a, q.a - 1), { v: p.v - q.v, step: `${p.v} − ${q.v} = ${p.v - q.v}`, deps: [p.k, q.k], kind: 'sub' });
+        }
+      }
+      if (!nf.size && !na.size) break;
+      nf.forEach((v, k) => facts.set(k, v));
+      na.forEach((v, k) => areas.set(k, v));
+    }
+    if (!done()) return null;
+
+    // 答えまでに必要な式だけを順番にならべる
+    const steps = [], seen = new Set();
+    const visit = id => {
+      if (seen.has(id)) return; seen.add(id);
+      const f = id[0] === 'A' ? areas.get(+id.slice(1)) : facts.get(id);
+      if (!f || !f.step) return;
+      f.deps.forEach(visit);
+      steps.push(f.step);
+    };
+    visit(target.type === 'area' ? 'A' + target.rect : spanKey(target.axis, target.a, target.b));
+    return { steps, answer: target.type === 'area' ? areas.get(target.rect).v : facts.get(spanKey(target.axis, target.a, target.b)).v };
+  }
+
+  // ---------- 問題を作る ----------
+  function makePuzzle(level) {
+    for (let attempt = 0; attempt < 4000; attempt++) {
+      const s = makeShape(level);
+      if (!s) continue;
+      const cands = labelCandidates(s);
+      // 同じ長さ（同じ範囲）の候補は1つにしぼる
+      const bySpan = new Map();
+      shuffle(cands).forEach(L => { const k = spanKey(L.axis, L.a, L.b); if (!bySpan.has(k)) bySpan.set(k, L); });
+      const labels = [...bySpan.values()];
+
+      // x にするもの：辺の長さ か 面積
+      const targets = [];
+      labels.forEach(L => targets.push({ type: 'len', ...L }));
+      s.rects.forEach((R, i) => targets.push({ type: 'area', rect: i }));
+      const lenT = targets.filter(t => t.type === 'len'), areaT = targets.filter(t => t.type === 'area');
+      const target = (rand() < 0.62 || !areaT.length) ? pick(lenT) : pick(areaT);
+      if (!target) continue;
+
+      const areasG = s.rects.map((_, i) => i).filter(i => !(target.type === 'area' && target.rect === i));
+      let labelsG = labels.filter(L => !(target.type === 'len' && L.axis === target.axis && L.a === target.a && L.b === target.b));
+      if (!solve(s, areasG, labelsG, target)) continue;
+
+      // 使わない長さを消す（最小限のヒントに）
+      for (const L of shuffle([...labelsG])) {
+        const trial = labelsG.filter(x => x !== L);
+        if (solve(s, areasG, trial, target)) labelsG = trial;
+      }
+      // 書いてある面積はすべて使うこと
+      if (areasG.some(i => solve(s, areasG.filter(x => x !== i), labelsG, target))) continue;
+      // 長さがゼロ個の問題はなし
+      if (!labelsG.length) continue;
+
+      const sol = solve(s, areasG, labelsG, target);
+      // 答えが図の中の数字と同じになる問題はさける
+      if (target.type === 'area' && areasG.some(i => rw(s, s.rects[i]) * rh(s, s.rects[i]) === sol.answer)) continue;
+      // レベル2以上は「かけ算だけ」で終わる問題をさける
+      if (level >= 2 && sol.steps.length < level) continue;
+
+      const pz = { level, shape: s, areas: areasG, labels: labelsG, target, answer: sol.answer, steps: sol.steps };
+      pz.layout = layout(pz);
+      if (!pz.layout) continue;
+      return pz;
+    }
+    return null;
+  }
+
+  // ---------- 描く ----------
+  const disp = v => 34 + 10 * v;   // 図の長さ（正確ではないが大小関係は守る）
+  const FS_LABEL = 17;
+  const textW = (str, fs) => [...str].reduce((w, ch) => w + (/[\x20-\x7e]/.test(ch) ? 0.58 : 1) * fs, 0);
+
+  function labelText(pz, L, isTarget, unit, sym) {
+    const s = pz.shape;
+    const v = sum(L.axis === 'c' ? s.W : s.H, L.a, L.b);
+    return (isTarget ? sym : String(v)) + unit;
+  }
+
+  function layout(pz) {
+    const s = pz.shape;
+    const X = [0], Y = [0];
+    s.W.forEach(w => X.push(X[X.length - 1] + disp(w)));
+    s.H.forEach(h => Y.push(Y[Y.length - 1] + disp(h)));
+    const boxes = [];
+    const cells = [];
+    for (let r = 0; r < s.nr; r++) for (let c = 0; c < s.nc; c++) {
+      if (s.owner[r][c] >= 0) cells.push({ x0: X[c] + 1, y0: Y[r] + 1, x1: X[c + 1] - 1, y1: Y[r + 1] - 1 });
+    }
+    const all = pz.labels.map(L => ({ L, isT: false }));
+    if (pz.target.type === 'len') all.push({ L: pz.target, isT: true });
+    const items = [];
+    const ARC = 13;
+    for (const { L, isT } of all) {
+      const t = labelText(pz, L, isT, 'cm', 'x');  // 最大幅で判定
+      const w = textW(t, FS_LABEL) + 4;
+      let arc, box, tx, ty, anchor;
+      if (L.axis === 'c') {
+        const x0 = X[L.a], x1 = X[L.b + 1];
+        const y = L.side === 'top' ? Y[s.rects[L.rect].r0] : Y[s.rects[L.rect].r1 + 1];
+        const d = L.side === 'top' ? -1 : 1;
+        arc = { x0, y0: y, x1, y1: y, cx: (x0 + x1) / 2, cy: y + d * 2 * ARC };
+        tx = (x0 + x1) / 2; anchor = 'middle';
+        ty = d < 0 ? y - ARC - 5 : y + ARC + 5 + FS_LABEL * 0.8;
+        box = { x0: tx - w / 2, x1: tx + w / 2, y0: d < 0 ? y - ARC - 6 - FS_LABEL : y + 2, y1: d < 0 ? y - 2 : y + ARC + 7 + FS_LABEL };
+      } else {
+        const y0 = Y[L.a], y1 = Y[L.b + 1];
+        const x = L.side === 'left' ? X[s.rects[L.rect].c0] : X[s.rects[L.rect].c1 + 1];
+        const d = L.side === 'left' ? -1 : 1;
+        arc = { x0: x, y0, x1: x, y1, cx: x + d * 2 * ARC, cy: (y0 + y1) / 2 };
+        ty = (y0 + y1) / 2 + FS_LABEL * 0.35;
+        tx = x + d * (ARC + 5); anchor = d < 0 ? 'end' : 'start';
+        box = d < 0 ? { x0: tx - w, x1: x - 2, y0: ty - FS_LABEL, y1: ty + 4 } : { x0: x + 2, x1: tx + w, y0: ty - FS_LABEL, y1: ty + 4 };
+        // 弧そのものの範囲
+        box.y0 = Math.min(box.y0, (y0 + y1) / 2 - 4); box.y1 = Math.max(box.y1, (y0 + y1) / 2 + 4);
+      }
+      const hit = b => !(b.x1 <= box.x0 || box.x1 <= b.x0 || b.y1 <= box.y0 || box.y1 <= b.y0);
+      if (cells.some(hit) || boxes.some(hit)) return null;
+      boxes.push(box);
+      items.push({ L, isT, arc, tx, ty, anchor, box });
+    }
+    let minX = 0, minY = 0, maxX = X[X.length - 1], maxY = Y[Y.length - 1];
+    boxes.forEach(b => { minX = Math.min(minX, b.x0); minY = Math.min(minY, b.y0); maxX = Math.max(maxX, b.x1); maxY = Math.max(maxY, b.y1); });
+    // 小さい図が大きくなりすぎないよう、最小の枠をとる
+    const pad = 8;
+    let vw = maxX - minX + 2 * pad, vh = maxY - minY + 2 * pad;
+    const VW = Math.max(vw, 300), VH = Math.max(vh, 230);
+    return { X, Y, items, vb: [minX - pad - (VW - vw) / 2, minY - pad - (VH - vh) / 2, VW, VH] };
+  }
+
+  const esc = str => String(str).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+
+  function symbolSvg(sym, x, y, fs, anchor, color, unitStr) {
+    // x は数学らしく斜体に
+    const style = sym === 'x' ? ' font-style="italic" font-family="Times New Roman, serif"' : '';
+    return `<text x="${x}" y="${y}" text-anchor="${anchor}" font-size="${fs}" fill="${color}"><tspan${style} font-size="${sym === 'x' ? fs * 1.2 : fs}" font-weight="600">${esc(sym)}</tspan>${unitStr ? `<tspan font-size="${fs * 0.75}">${unitStr}</tspan>` : ''}</text>`;
+  }
+
+  function renderSvg(pz, opt, showAnswer) {
+    const s = pz.shape, { X, Y, items, vb } = pz.layout;
+    const ink = '#26323C', pen = '#D9352A';
+    let g = '';
+    // 長方形
+    s.rects.forEach((R, i) => {
+      const x = X[R.c0], y = Y[R.r0], w = X[R.c1 + 1] - x, h = Y[R.r1 + 1] - y;
+      g += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#fff" stroke="${ink}" stroke-width="2.4" stroke-linejoin="round"/>`;
+    });
+    // 面積
+    s.rects.forEach((R, i) => {
+      const x = X[R.c0], y = Y[R.r0], w = X[R.c1 + 1] - x, h = Y[R.r1 + 1] - y;
+      const isT = pz.target.type === 'area' && pz.target.rect === i;
+      const A = rw(s, R) * rh(s, R);
+      const unit = opt.unit ? 'cm²' : '';
+      const main = isT && !showAnswer ? opt.sym : String(A);
+      const est = textW(main, 1) * 1.1 + (unit ? textW(unit, 0.7) : 0);
+      const fs = Math.min(22, (w - 10) / est, h * 0.45);
+      const cx = x + w / 2, cy = y + h / 2 + fs * 0.35;
+      const color = isT && showAnswer ? pen : ink;
+      if (fs < 15 && unit) {
+        // 細い長方形は単位を下の行へ
+        const f2 = Math.min(20, (w - 8) / (textW(main, 1) * 1.1), h * 0.3);
+        const top = y + h / 2 - 2;
+        if (isT && !showAnswer) g += symbolSvg(opt.sym, cx, top, f2, 'middle', ink, '');
+        else g += `<text x="${cx}" y="${top}" text-anchor="middle" font-size="${f2}" fill="${color}" font-weight="${isT ? 600 : 400}">${A}</text>`;
+        g += `<text x="${cx}" y="${top + f2 * 0.95}" text-anchor="middle" font-size="${f2 * 0.62}" fill="${color}">${unit}</text>`;
+      } else if (isT && !showAnswer) g += symbolSvg(opt.sym, cx, cy, fs, 'middle', ink, unit);
+      else g += `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="${fs}" fill="${color}" font-weight="${isT ? 600 : 400}">${A}${unit ? `<tspan font-size="${fs * 0.7}">${unit}</tspan>` : ''}</text>`;
+    });
+    // 長さ
+    for (const it of items) {
+      const a = it.arc;
+      const color = it.isT && showAnswer ? pen : ink;
+      g += `<path d="M${a.x0},${a.y0} Q${a.cx},${a.cy} ${a.x1},${a.y1}" fill="none" stroke="${ink}" stroke-width="1.4"/>`;
+      const unit = opt.unit ? 'cm' : '';
+      if (it.isT && !showAnswer) g += symbolSvg(opt.sym, it.tx, it.ty, FS_LABEL, it.anchor, ink, unit);
+      else {
+        const v = sum(it.L.axis === 'c' ? s.W : s.H, it.L.a, it.L.b);
+        g += `<text x="${it.tx}" y="${it.ty}" text-anchor="${it.anchor}" font-size="${FS_LABEL}" fill="${color}" font-weight="${it.isT ? 600 : 400}">${v}${unit ? `<tspan font-size="${FS_LABEL * 0.75}">${unit}</tspan>` : ''}</text>`;
+      }
+    }
+    const [vx, vy, vw, vh] = vb;
+    return `<svg viewBox="${vx} ${vy} ${vw} ${vh}" role="img" aria-label="面積迷路の図" xmlns="http://www.w3.org/2000/svg">${g}</svg>`;
+  }
+
+  // ---------- ページを組み立てる ----------
+  function levelsFor(n, lv) {
+    if (lv !== 'mix') return Array(n).fill(+lv);
+    // やさしい → むずかしい
+    const plan = [];
+    for (let i = 0; i < n; i++) {
+      const t = i / Math.max(1, n - 1);
+      plan.push(t < 0.12 ? 1 : t < 0.4 ? 2 : t < 0.7 ? 3 : t < 0.9 ? 4 : 5);
+    }
+    return plan;
+  }
+
+  function signature(pz) {
+    const s = pz.shape;
+    return JSON.stringify([s.W, s.H, s.rects, pz.target, pz.labels.map(L => [L.axis, L.a, L.b])]);
+  }
+
+  function build(seed) {
+    rand = mulberry32(seed);
+    const opt = {
+      level: document.getElementById('level').value,
+      count: +document.getElementById('count').value,
+      sym: document.getElementById('symbol').value,
+      unit: document.getElementById('unit').value,
+      answers: document.getElementById('answers').value,
+      title: document.getElementById('title').value.trim() || '面積迷路',
+    };
+    const plan = levelsFor(opt.count, opt.level);
+    const puzzles = [], seen = new Set();
+    for (const lv of plan) {
+      let pz = null;
+      for (let t = 0; t < 30; t++) {
+        pz = makePuzzle(lv);
+        if (pz && !seen.has(signature(pz))) break;
+      }
+      if (!pz) continue;
+      seen.add(signature(pz));
+      puzzles.push(pz);
+    }
+
+    const lvLabel = opt.level === 'mix' ? 'ミックス' : 'レベル' + opt.level;
+    const pages = Math.ceil(puzzles.length / 6);
+    let html = '';
+    const sheet = (p, answer) => {
+      const chunk = puzzles.slice(p * 6, p * 6 + 6);
+      let cells = '';
+      chunk.forEach((pz, k) => {
+        const no = p * 6 + k + 1;
+        const unit = opt.unit ? (pz.target.type === 'area' ? 'cm²' : 'cm') : '';
+        const symHtml = opt.sym === 'x' ? '<i style="font-family:Times New Roman,serif;font-size:1.15em">x</i>' : esc(opt.sym);
+        const ansLine = answer
+          ? `<ol class="steps">${pz.steps.map(st => `<li>${esc(st)}</li>`).join('')}</ol><div class="answer-line filled">こたえ　${symHtml} = ${pz.answer} ${unit}</div>`
+          : `<div class="answer-line">こたえ　${symHtml} = <span class="blank"></span> ${unit}</div>`;
+        cells += `<div class="prob"><div class="prob-no"><span class="no">${no}</span><span class="lv">レベル${pz.level}</span></div><div class="fig">${renderSvg(pz, opt, answer)}</div>${ansLine}</div>`;
+      });
+      for (let k = chunk.length; k < 6; k++) cells += '<div></div>';
+      return `<section class="sheet">
+        <div class="sheet-head">
+          <div class="sheet-title">${esc(opt.title)}<small>${lvLabel}　${p + 1}/${pages}</small>${answer ? '<span class="ans-tag">こたえ</span>' : ''}</div>
+          <div class="name-box">${answer ? '' : 'なまえ<span></span>'}</div>
+        </div>
+        ${answer ? '' : '<p class="sheet-note">書いてある数字をつかって、わからない数をもとめよう。長方形の面積 ＝ たて × よこ。図の長さは正確ではありません。</p>'}
+        <div class="grid">${cells}</div>
+        <div class="foot">問題番号 ${seed}</div>
+      </section>`;
+    };
+    if (opt.answers !== 'only') for (let p = 0; p < pages; p++) html += sheet(p, false);
+    if (opt.answers !== 'none') for (let p = 0; p < pages; p++) html += sheet(p, true);
+    document.getElementById('out').innerHTML = html;
+  }
+
+  const seedInput = document.getElementById('seed');
+  const newSeed = () => { const s = 1 + Math.floor(Math.random() * 999999); seedInput.value = s; build(s); };
+  document.getElementById('btn-new').addEventListener('click', newSeed);
+  document.getElementById('btn-same').addEventListener('click', () => build(+seedInput.value || 1));
+  document.getElementById('btn-print').addEventListener('click', () => window.print());
+  ['level', 'count', 'symbol', 'unit', 'answers', 'title'].forEach(id =>
+    document.getElementById(id).addEventListener('change', () => build(+seedInput.value || 1)));
+
+  const q = new URLSearchParams(location.search);
+  if (q.get('level')) document.getElementById('level').value = q.get('level');
+  if (q.get('count')) document.getElementById('count').value = q.get('count');
+  if (q.get('seed')) { seedInput.value = q.get('seed'); build(+q.get('seed')); } else newSeed();
+
+  // テスト用
+  window.__mensekiMeiro = { makePuzzle, solve, setSeed: s => { rand = mulberry32(s); } };
+})();
+</script>
+</body>
+</html>
