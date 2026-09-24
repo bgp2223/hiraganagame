@@ -1,6 +1,7 @@
 import math
 S = 220                      # 立方体の1辺（px）
-K, TH = 0.5, math.radians(40)  # 奥行きの縮み・角度（キャビネット図）
+import os
+K, TH = float(os.environ.get('K', 0.35)), math.radians(float(os.environ.get('TH', 45)))  # 奥行きの縮み・角度（キャビネット図）
 DX, DY = K * math.cos(TH) * S, K * math.sin(TH) * S
 
 # 3D座標（x:右, y:上, z:奥）
@@ -65,14 +66,14 @@ figs['1_正八面体'] = svg(body)
 # ② 立方体のみ
 figs['2_立方体'] = svg(cube())
 
-# ③ 正三角形 DEG で切る（ACに平行。三角すい H-DEG は全体の 1/6）
-body = [poly([V['D'], V['E'], V['G']])] + cube()
-body += [line(V['D'], V['E'], w=2.6), line(V['D'], V['G'], w=2.6), line(V['E'], V['G'], True, 2.2)]
+# ③ 正三角形 BDE で切る（AGに垂直。三角すい A-BDE は全体の 1/6）
+body = [poly([V['B'], V['D'], V['E']])] + cube()
+body += [line(V['B'], V['D'], w=2.6), line(V['D'], V['E'], w=2.6), line(V['B'], V['E'], True, 2.2)]
 figs['3_正三角形の切り口'] = svg(body)
 
-# ④ 正六角形で切る（ACに平行。対角線 BH に垂直で、6本の辺の中点を通る）
-hexp = [mid('A','D'), mid('D','C'), mid('C','G'), mid('G','F'), mid('F','E'), mid('E','A')]
-vis = [True, True, False, False, False, True]   # 上面・前面・右面は見える、左面・底面・奥面は見えない
+# ④ 正六角形で切る（AGに垂直で、6本の辺の中点を通る）
+hexp = [mid('B','C'), mid('C','D'), mid('D','H'), mid('H','E'), mid('E','F'), mid('F','B')]
+vis = [True, True, True, False, False, False]   # 上面・前面・右面は見える、底面・奥面・左面は見えない
 body = [poly(hexp)] + cube()
 for i in range(6):
     body.append(line(hexp[i], hexp[(i + 1) % 6], not vis[i], 2.6 if vis[i] else 2.2))
