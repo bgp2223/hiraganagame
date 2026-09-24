@@ -65,14 +65,14 @@ figs['1_正八面体'] = svg(body)
 # ② 立方体のみ
 figs['2_立方体'] = svg(cube())
 
-# ③ 正三角形 ACH で切る（三角すい D-ACH は全体の 1/6）
-body = [poly([V['A'], V['C'], V['H']])] + cube()
-body += [line(V['A'], V['C'], w=2.6), line(V['C'], V['H'], w=2.6), line(V['H'], V['A'], w=2.6)]
+# ③ 正三角形 DEG で切る（ACに平行。三角すい H-DEG は全体の 1/6）
+body = [poly([V['D'], V['E'], V['G']])] + cube()
+body += [line(V['D'], V['E'], w=2.6), line(V['D'], V['G'], w=2.6), line(V['E'], V['G'], True, 2.2)]
 figs['3_正三角形の切り口'] = svg(body)
 
-# ④ 正六角形で切る（対角線 DF に垂直、6本の辺の中点を通る）
-hexp = [mid('A','B'), mid('B','C'), mid('C','G'), mid('G','H'), mid('H','E'), mid('E','A')]
-vis = [True, False, True, False, True, False]   # 上面・前面・右面は見える、左面・底面・奥面は見えない
+# ④ 正六角形で切る（ACに平行。対角線 BH に垂直で、6本の辺の中点を通る）
+hexp = [mid('A','D'), mid('D','C'), mid('C','G'), mid('G','F'), mid('F','E'), mid('E','A')]
+vis = [True, True, False, False, False, True]   # 上面・前面・右面は見える、左面・底面・奥面は見えない
 body = [poly(hexp)] + cube()
 for i in range(6):
     body.append(line(hexp[i], hexp[(i + 1) % 6], not vis[i], 2.6 if vis[i] else 2.2))
