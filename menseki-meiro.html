@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>面積迷路メーカー</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --paper: #FFFFFF;
@@ -26,7 +24,7 @@
   body {
     background: var(--desk);
     color: var(--ink);
-    font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Meiryo', sans-serif;
+    font-family: 'MS PGothic', 'ＭＳ Ｐゴシック', 'IPAPGothic', 'IPA Pゴシック', sans-serif;
     padding-inline: 16px;
     padding-block: 16px 48px;
   }
@@ -138,21 +136,21 @@
   .prob-no .no {
     display: inline-grid;
     place-items: center;
-    width: 24px; height: 24px;
-    border-radius: 50%;
+    min-width: 24px; height: 24px; padding: 0 4px;
+    border-radius: 12px;
     border: 2px solid var(--line);
     font-size: 13px;
   }
   .prob-no .lv { font-size: 11px; color: var(--muted); font-weight: 700; }
   .fig { flex: 1; position: relative; min-height: 0; }
   .fig svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
-  .answer-line { font-size: 14px; text-align: right; font-family: 'Klee One', serif; }
+  .answer-line { font-size: 14px; text-align: right; }
   .answer-line .blank { display: inline-block; width: 22mm; border-bottom: 1px solid var(--line); }
   .answer-line.filled { color: var(--pen); font-weight: 600; }
-  .steps { columns: 2; column-gap: 4mm; font-family: 'Klee One', serif; font-size: 12px; color: var(--pen); margin: 0; padding: 0; list-style: none; line-height: 1.45; }
+  .steps { columns: 2; column-gap: 4mm; font-size: 12px; color: var(--pen); margin: 0; padding: 0; list-style: none; line-height: 1.45; }
   .foot { font-size: 10px; color: var(--muted); text-align: right; margin-top: 3mm; }
 
-  svg text { font-family: 'Klee One', 'M PLUS Rounded 1c', serif; }
+  svg text { font-family: 'MS PGothic', 'ＭＳ Ｐゴシック', 'IPAPGothic', 'IPA Pゴシック', sans-serif; }
 
   @media screen and (max-width: 820px) {
     .sheet { height: auto; padding: 16px; }
@@ -179,39 +177,39 @@
 <section class="panel" aria-label="設定">
   <h1>面積迷路<span>メーカー</span></h1>
   <p class="lead">
-    九九だけで解ける「面積迷路」を自動で作ります。すべての数字を使うと、ちょうど答えが1つに決まる問題だけを出します。
+    九九だけで解ける「面積迷路」を自動で作ります。すべての数字を使うと、ちょうど答えが１つに決まる問題だけを出します。
     「印刷する」からPDFに保存すれば、まなブリッジにそのままアップロードできます。
   </p>
   <div class="controls">
     <label class="field" for="level">レベル
       <select id="level">
-        <option value="1">レベル1（長方形1つ）</option>
-        <option value="2">レベル2（長方形2つ）</option>
-        <option value="3">レベル3（長方形3つ）</option>
-        <option value="4">レベル4（長方形4つ）</option>
-        <option value="5">レベル5（長方形5つ）</option>
+        <option value="1">レベル１（長方形１つ）</option>
+        <option value="2">レベル２（長方形２つ）</option>
+        <option value="3">レベル３（長方形３つ）</option>
+        <option value="4">レベル４（長方形４つ）</option>
+        <option value="5">レベル５（長方形５つ）</option>
         <option value="mix" selected>ミックス（やさしい→むずかしい）</option>
       </select>
     </label>
     <label class="field" for="count">問題数
       <select id="count">
-        <option value="6">6問（1枚）</option>
-        <option value="12" selected>12問（2枚）</option>
-        <option value="18">18問（3枚）</option>
-        <option value="24">24問（4枚）</option>
-        <option value="30">30問（5枚）</option>
+        <option value="6">６問（１枚）</option>
+        <option value="12" selected>１２問（２枚）</option>
+        <option value="18">１８問（３枚）</option>
+        <option value="24">２４問（４枚）</option>
+        <option value="30">３０問（５枚）</option>
       </select>
     </label>
     <label class="field" for="symbol">わからない数
       <select id="symbol">
-        <option value="x" selected>x</option>
+        <option value="x" selected>ｘ</option>
         <option value="□">□</option>
         <option value="？">？</option>
       </select>
     </label>
     <label class="field" for="unit">単位
       <select id="unit">
-        <option value="cm" selected>cm・cm²をつける</option>
+        <option value="cm" selected>ｃｍ・ｃｍ²をつける</option>
         <option value="">つけない</option>
       </select>
     </label>
@@ -235,8 +233,8 @@
     <button id="btn-print" type="button">印刷する / PDFに保存</button>
   </div>
   <ul class="levels">
-    <li>ルール：長方形の面積＝たて×よこ。書いてある数字だけを使って、x を求めます。</li>
-    <li>辺の長さはすべて2〜9cm、面積はすべて九九の答えになります。図の長さは正確ではありません。</li>
+    <li>ルール：長方形の面積＝たて×よこ。書いてある数字だけを使って、ｘを求めます。</li>
+    <li>辺の長さはすべて２〜９ｃｍ、面積はすべて九九の答えになります。図の長さは正確ではありません。</li>
   </ul>
 </section>
 
@@ -267,6 +265,12 @@
   }
 
   const MIN_SIDE = 2, MAX_SIDE = 9;
+
+  // 数字・英字・記号をすべて全角に
+  const Z = str => String(str)
+    .replace(/[!-~]/g, ch => String.fromCharCode(ch.charCodeAt(0) + 0xFEE0))
+    .replace(/ /g, '\u3000')
+    .replace(/−/g, '－');
 
   // ---------- 形を作る ----------
   // 形 = 列の幅 W[]、行の高さ H[]、長方形のリスト（列・行の範囲）
@@ -501,12 +505,13 @@
   // ---------- 描く ----------
   const disp = v => 34 + 10 * v;   // 図の長さ（正確ではないが大小関係は守る）
   const FS_LABEL = 17;
-  const textW = (str, fs) => [...str].reduce((w, ch) => w + (/[\x20-\x7e]/.test(ch) ? 0.58 : 1) * fs, 0);
+  // Pゴシックの全角英数字はプロポーショナルで、漢字より細い
+  const textW = (str, fs) => [...str].reduce((w, ch) => w + (/[\x20-\x7e]/.test(ch) ? 0.58 : /[\uFF01-\uFF5E²]/.test(ch) ? 0.66 : 1) * fs, 0);
 
   function labelText(pz, L, isTarget, unit, sym) {
     const s = pz.shape;
     const v = sum(L.axis === 'c' ? s.W : s.H, L.a, L.b);
-    return (isTarget ? sym : String(v)) + unit;
+    return (isTarget ? sym : Z(v)) + unit;
   }
 
   function layout(pz) {
@@ -524,7 +529,7 @@
     const items = [];
     const ARC = 13;
     for (const { L, isT } of all) {
-      const t = labelText(pz, L, isT, 'cm', 'x');  // 最大幅で判定
+      const t = labelText(pz, L, isT, 'ｃｍ', 'ｘ');  // 最大幅で判定
       const w = textW(t, FS_LABEL) + 4;
       let arc, box, tx, ty, anchor;
       if (L.axis === 'c') {
@@ -564,8 +569,8 @@
 
   function symbolSvg(sym, x, y, fs, anchor, color, unitStr) {
     // x は数学らしく斜体に
-    const style = sym === 'x' ? ' font-style="italic" font-family="Times New Roman, serif"' : '';
-    return `<text x="${x}" y="${y}" text-anchor="${anchor}" font-size="${fs}" fill="${color}"><tspan${style} font-size="${sym === 'x' ? fs * 1.2 : fs}" font-weight="600">${esc(sym)}</tspan>${unitStr ? `<tspan font-size="${fs * 0.75}">${unitStr}</tspan>` : ''}</text>`;
+    const style = '';
+    return `<text x="${x}" y="${y}" text-anchor="${anchor}" font-size="${fs}" fill="${color}"><tspan${style} font-size="${fs}" font-weight="600">${esc(sym)}</tspan>${unitStr ? `<tspan font-size="${fs * 0.75}">${unitStr}</tspan>` : ''}</text>`;
   }
 
   function renderSvg(pz, opt, showAnswer) {
@@ -582,8 +587,8 @@
       const x = X[R.c0], y = Y[R.r0], w = X[R.c1 + 1] - x, h = Y[R.r1 + 1] - y;
       const isT = pz.target.type === 'area' && pz.target.rect === i;
       const A = rw(s, R) * rh(s, R);
-      const unit = opt.unit ? 'cm²' : '';
-      const main = isT && !showAnswer ? opt.sym : String(A);
+      const unit = opt.unit ? 'ｃｍ²' : '';
+      const main = isT && !showAnswer ? opt.sym : Z(A);
       const est = textW(main, 1) * 1.1 + (unit ? textW(unit, 0.7) : 0);
       const fs = Math.min(22, (w - 10) / est, h * 0.45);
       const cx = x + w / 2, cy = y + h / 2 + fs * 0.35;
@@ -593,21 +598,21 @@
         const f2 = Math.min(20, (w - 8) / (textW(main, 1) * 1.1), h * 0.3);
         const top = y + h / 2 - 2;
         if (isT && !showAnswer) g += symbolSvg(opt.sym, cx, top, f2, 'middle', ink, '');
-        else g += `<text x="${cx}" y="${top}" text-anchor="middle" font-size="${f2}" fill="${color}" font-weight="${isT ? 600 : 400}">${A}</text>`;
+        else g += `<text x="${cx}" y="${top}" text-anchor="middle" font-size="${f2}" fill="${color}" font-weight="${isT ? 600 : 400}">${Z(A)}</text>`;
         g += `<text x="${cx}" y="${top + f2 * 0.95}" text-anchor="middle" font-size="${f2 * 0.62}" fill="${color}">${unit}</text>`;
       } else if (isT && !showAnswer) g += symbolSvg(opt.sym, cx, cy, fs, 'middle', ink, unit);
-      else g += `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="${fs}" fill="${color}" font-weight="${isT ? 600 : 400}">${A}${unit ? `<tspan font-size="${fs * 0.7}">${unit}</tspan>` : ''}</text>`;
+      else g += `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="${fs}" fill="${color}" font-weight="${isT ? 600 : 400}">${Z(A)}${unit ? `<tspan font-size="${fs * 0.7}">${unit}</tspan>` : ''}</text>`;
     });
     // 長さ
     for (const it of items) {
       const a = it.arc;
       const color = it.isT && showAnswer ? pen : ink;
       g += `<path d="M${a.x0},${a.y0} Q${a.cx},${a.cy} ${a.x1},${a.y1}" fill="none" stroke="${ink}" stroke-width="1.4"/>`;
-      const unit = opt.unit ? 'cm' : '';
+      const unit = opt.unit ? 'ｃｍ' : '';
       if (it.isT && !showAnswer) g += symbolSvg(opt.sym, it.tx, it.ty, FS_LABEL, it.anchor, ink, unit);
       else {
         const v = sum(it.L.axis === 'c' ? s.W : s.H, it.L.a, it.L.b);
-        g += `<text x="${it.tx}" y="${it.ty}" text-anchor="${it.anchor}" font-size="${FS_LABEL}" fill="${color}" font-weight="${it.isT ? 600 : 400}">${v}${unit ? `<tspan font-size="${FS_LABEL * 0.75}">${unit}</tspan>` : ''}</text>`;
+        g += `<text x="${it.tx}" y="${it.ty}" text-anchor="${it.anchor}" font-size="${FS_LABEL}" fill="${color}" font-weight="${it.isT ? 600 : 400}">${Z(v)}${unit ? `<tspan font-size="${FS_LABEL * 0.75}">${unit}</tspan>` : ''}</text>`;
       }
     }
     const [vx, vy, vw, vh] = vb;
@@ -636,7 +641,7 @@
     const opt = {
       level: document.getElementById('level').value,
       count: +document.getElementById('count').value,
-      sym: document.getElementById('symbol').value,
+      sym: Z(document.getElementById('symbol').value),
       unit: document.getElementById('unit').value,
       answers: document.getElementById('answers').value,
       title: document.getElementById('title').value.trim() || '面積迷路',
@@ -654,7 +659,7 @@
       puzzles.push(pz);
     }
 
-    const lvLabel = opt.level === 'mix' ? 'ミックス' : 'レベル' + opt.level;
+    const lvLabel = opt.level === 'mix' ? 'ミックス' : 'レベル' + Z(opt.level);
     const pages = Math.ceil(puzzles.length / 6);
     let html = '';
     const sheet = (p, answer) => {
@@ -662,22 +667,22 @@
       let cells = '';
       chunk.forEach((pz, k) => {
         const no = p * 6 + k + 1;
-        const unit = opt.unit ? (pz.target.type === 'area' ? 'cm²' : 'cm') : '';
-        const symHtml = opt.sym === 'x' ? '<i style="font-family:Times New Roman,serif;font-size:1.15em">x</i>' : esc(opt.sym);
+        const unit = opt.unit ? (pz.target.type === 'area' ? 'ｃｍ²' : 'ｃｍ') : '';
+        const symHtml = esc(opt.sym);
         const ansLine = answer
-          ? `<ol class="steps">${pz.steps.map(st => `<li>${esc(st)}</li>`).join('')}</ol><div class="answer-line filled">こたえ　${symHtml} = ${pz.answer} ${unit}</div>`
-          : `<div class="answer-line">こたえ　${symHtml} = <span class="blank"></span> ${unit}</div>`;
-        cells += `<div class="prob"><div class="prob-no"><span class="no">${no}</span><span class="lv">レベル${pz.level}</span></div><div class="fig">${renderSvg(pz, opt, answer)}</div>${ansLine}</div>`;
+          ? `<ol class="steps">${pz.steps.map(st => `<li>${esc(Z(st.replace(/ /g, '')))}</li>`).join('')}</ol><div class="answer-line filled">こたえ　${symHtml}＝${Z(pz.answer)}${unit}</div>`
+          : `<div class="answer-line">こたえ　${symHtml}＝<span class="blank"></span>${unit}</div>`;
+        cells += `<div class="prob"><div class="prob-no"><span class="no">${Z(no)}</span><span class="lv">レベル${Z(pz.level)}</span></div><div class="fig">${renderSvg(pz, opt, answer)}</div>${ansLine}</div>`;
       });
       for (let k = chunk.length; k < 6; k++) cells += '<div></div>';
       return `<section class="sheet">
         <div class="sheet-head">
-          <div class="sheet-title">${esc(opt.title)}<small>${lvLabel}　${p + 1}/${pages}</small>${answer ? '<span class="ans-tag">こたえ</span>' : ''}</div>
+          <div class="sheet-title">${esc(Z(opt.title))}<small>${lvLabel}　${Z(p + 1)}／${Z(pages)}</small>${answer ? '<span class="ans-tag">こたえ</span>' : ''}</div>
           <div class="name-box">${answer ? '' : 'なまえ<span></span>'}</div>
         </div>
         ${answer ? '' : '<p class="sheet-note">書いてある数字をつかって、わからない数をもとめよう。長方形の面積 ＝ たて × よこ。図の長さは正確ではありません。</p>'}
         <div class="grid">${cells}</div>
-        <div class="foot">問題番号 ${seed}</div>
+        <div class="foot">問題番号　${Z(seed)}</div>
       </section>`;
     };
     if (opt.answers !== 'only') for (let p = 0; p < pages; p++) html += sheet(p, false);
