@@ -13,12 +13,12 @@ def t(y,s,size,color=INK,right=False):
     (c.drawRightString if right else c.drawString)(R if right else L,H-y*mm,s)
 # 上段左：ロゴ・会社名
 lw=36*mm; c.drawImage('meishi/logo.png',L,H-12.5*mm,width=lw,height=lw/6,mask='auto')
-t(16,'株式会社森田修学館',6.5)
 # 中段右：所属・氏名
 t(23,'梅光園教室',7.5,right=True)
 t(30,'黒岩 真吾',17,right=True)
 t(33.6,'Shingo Kuroiwa',6,GREY,right=True)
 # 下段左：連絡先
+t(35.3,'株式会社森田修学館',6.5)
 t(38.6,'福岡市中央区梅光園2-14-3',6.5)
 t(41.9,'TEL 092-714-0070　　MOBILE 090-4517-7401',6.5)
 t(45.2,'E-mail bgp2223@gmail.com',6.5)
