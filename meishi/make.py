@@ -2,26 +2,28 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-import glob
-p=[f for f in glob.glob('/usr/share/fonts/**/ipag.ttf',recursive=True)][0]
-pdfmetrics.registerFont(TTFont('G',p))
+pdfmetrics.registerFont(TTFont('G','/usr/share/fonts/opentype/ipaexfont-gothic/ipaexg.ttf'))
 W,H=91*mm,55*mm
+L,R=8*mm,W-8*mm
 c=canvas.Canvas('meishi/meishi.pdf',pagesize=(W,H))
-c.setFillColorRGB(0.8,0.1,0.1); c.rect(0,H-3*mm,W,3*mm,stroke=0,fill=1)
-lw=42*mm; c.drawImage('meishi/logo.png',8*mm,H-13.5*mm,width=lw,height=lw/6,mask='auto')
-c.setFillColorRGB(0.1,0.1,0.1)
-def t(y,s,size): c.setFont('G',size); c.drawString(8*mm,H-y*mm,s)
-t(18.5,'梅光園教室',8.5)
-t(25.5,'黒岩 真吾',16)
-t(28.6,'KUROIWA SHINGO',6)
-t(33,'TEL  092-714-0070',7.5)
-t(36.3,'MOBILE  090-4517-7401',7.5)
-t(39.6,'MAIL  bgp2223@gmail.com',7.5)
-t(43.2,'株式会社森田修学館 梅光園校舎',6.5)
-t(45.9,'福岡市中央区梅光園2-14-3',6.5)
+c.setFillColorRGB(0.8,0.1,0.1); c.rect(0,H-2.5*mm,W,2.5*mm,stroke=0,fill=1)
+INK=(0.1,0.1,0.1); GREY=(0.35,0.35,0.35)
+def t(y,s,size,color=INK,right=False):
+    c.setFillColorRGB(*color); c.setFont('G',size)
+    (c.drawRightString if right else c.drawString)(R if right else L,H-y*mm,s)
+# 上段左：ロゴ・会社名
+lw=36*mm; c.drawImage('meishi/logo.png',L,H-12.5*mm,width=lw,height=lw/6,mask='auto')
+t(16,'株式会社森田修学館',6.5)
+# 中段右：所属・氏名
+t(23,'梅光園教室',7.5,right=True)
+t(30,'黒岩 真吾',17,right=True)
+t(33.6,'Shingo Kuroiwa',6,GREY,right=True)
+# 下段左：連絡先
+t(38.6,'福岡市中央区梅光園2-14-3',6.5)
+t(41.9,'TEL 092-714-0070　　MOBILE 090-4517-7401',6.5)
+t(45.2,'E-mail bgp2223@gmail.com',6.5)
 c.setStrokeColorRGB(0.75,0.75,0.75); c.setLineWidth(0.3)
-c.line(8*mm,H-47.8*mm,W-8*mm,H-47.8*mm)
-c.setFillColorRGB(0.35,0.35,0.35)
-t(50.3,'六本松校舎 福岡市中央区六本松4-5-36　高宮校舎 福岡市南区玉川町8-8',4.6)
-t(52.6,'西新校舎 福岡市早良区高取1-1-48',4.6)
+c.line(L,H-47.4*mm,R,H-47.4*mm)
+t(50.2,'六本松校舎 福岡市中央区六本松4-5-36　高宮校舎 福岡市南区玉川町8-8',4.6,GREY)
+t(52.5,'西新校舎 福岡市早良区高取1-1-48',4.6,GREY)
 c.save()
